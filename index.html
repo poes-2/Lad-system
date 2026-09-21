@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>ระบบบันทึกการเข้าใช้ห้องปฏิบัติการคอมพิวเตอร์ | Tech V4.0 Firebase Edition</title>
+  <title>ระบบบันทึกการเข้าใช้ห้องปฏิบัติการคอมพิวเตอร์ | Firebase Edition</title>
   
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@1,400;1,500;1,600;1,700&family=Kanit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -93,7 +93,7 @@
         <div class="sidebar-header px-4 py-2 border-bottom border-secondary mb-3 d-flex justify-content-between align-items-center">
           <span class="text-uppercase fw-bold text-cyan font-monospace" style="font-size: 0.8rem;">FIREBASE SYSTEM</span>
         </div>
-        <div id="student-profile-sidebar" class="px-4 py-3 mb-3 border-bottom border-secondary d-none">
+        <div id="student-profile-sidebar" class="px-4 py-3 mb-3 border-bottom border-secondary d-none" onclick="switchPage('profile')" style="cursor: pointer;">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-person-circle fs-3 text-cyan"></i>
             <div>
@@ -139,7 +139,7 @@
                     <form onsubmit="handleStudentLogin(event)">
                       <div class="mb-3">
                         <label class="form-label text-secondary fw-semibold">รหัสนักศึกษา / แอดมิน</label>
-                        <input type="text" id="loginStudentId" class="form-control font-monospace" required placeholder="ระบุรหัสนักศึกษา">
+                        <input type="text" id="loginStudentId" class="form-control font-monospace" required placeholder="ระบุรหัสนักศึกษาหรือ admin">
                       </div>
                       <div class="mb-4">
                         <label class="form-label text-secondary fw-semibold">รหัสผ่าน</label>
@@ -239,7 +239,7 @@
             </div>
           </div>
 
-          <!-- SECTION: PROFILE & DASHBOARD -->
+          <!-- SECTION: PROFILE -->
           <div id="page-profile" class="d-none">
             <div class="card p-4 text-center">
               <h4 class="fw-bold text-white" id="profile-fullname">-</h4>
@@ -247,6 +247,8 @@
               <p class="text-muted" id="profile-grade">-</p>
             </div>
           </div>
+          
+          <!-- SECTION: DASHBOARD -->
           <div id="page-dashboard" class="d-none">
             <div class="card p-4">
               <h4 class="fw-bold text-white">รายงานสถิติภาพรวมระบบ</h4>
@@ -259,7 +261,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK & App Scripts -->
+  <!-- Firebase SDK & App Scripts Integration -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -344,9 +346,9 @@
           getDocs(collection(db, "announcements"))
         ]);
 
-        const records = []; recSnap.forEach(d => records.push({ id: d.id, ...d.data() }));
-        const students = []; stuSnap.forEach(d => students.push({ id: d.id, ...d.data() }));
-        const announcements = []; annSnap.forEach(d => announcements.push({ id: d.id, ...d.data() }));
+        const records = []; recSnap.forEach(d => records.push({ firestoreId: d.id, ...d.data() }));
+        const students = []; stuSnap.forEach(d => students.push({ firestoreId: d.id, ...d.data() }));
+        const announcements = []; annSnap.forEach(d => announcements.push({ firestoreId: d.id, ...d.data() }));
 
         globalData = { records, students, announcements };
         renderAdminTable();
@@ -377,7 +379,7 @@
       showLoading(false);
     };
 
-    // Student Login
+    // Student Login & Admin Login
     window.handleStudentLogin = async function(e) {
       e.preventDefault();
       const id = document.getElementById('loginStudentId').value.trim();
@@ -407,7 +409,7 @@
           switchPage('home');
           Swal.fire('ยินดีต้อนรับ', found.fullName, 'success');
         } else {
-          Swal.fire('1เข้าสู่ระบบไม่สำเร็จ', 'รหัสนักศึกษาหรือรหัสผ่านไม่ถูกต้อง', 'error');
+          Swal.fire('เข้าสู่ระบบไม่สำเร็จ', 'รหัสนักศึกษาหรือรหัสผ่านไม่ถูกต้อง', 'error');
         }
       } catch (err) {
         Swal.fire('เกิดข้อผิดพลาด', err.message, 'error');
@@ -491,8 +493,8 @@
           <td>${r.subject}</td>
           <td><span class="badge bg-${r.status === 'Approved' ? 'success' : 'warning'}">${r.status}</span></td>
           <td>
-            <button class="btn btn-sm btn-success py-0 px-2" onclick="updateStatus('${r.id}', 'Approved')">อนุมัติ</button>
-            <button class="btn btn-sm btn-danger py-0 px-2" onclick="deleteRecord('${r.id}')">ลบ</button>
+            <button class="btn btn-sm btn-success py-0 px-2" onclick="updateStatus('${r.firestoreId}', 'Approved')">อนุมัติ</button>
+            <button class="btn btn-sm btn-danger py-0 px-2" onclick="deleteRecord('${r.firestoreId}')">ลบ</button>
           </td>
         </tr>`;
       });
